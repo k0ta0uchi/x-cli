@@ -264,4 +264,3 @@ x user elonmusk | jq '.followers_count'                         # 粉丝数
 - rquest (Chrome TLS 指纹) + reqwest (备用) 双 HTTP 客户端
 - 自动提取 x-client-transaction-id
 - 输出自动提取关键字段，去除 GraphQL 包装（减少 98% 数据量）
-- API 逻辑参考 [heimdall](https://github.com/cyberconnecthq/heimdall)
