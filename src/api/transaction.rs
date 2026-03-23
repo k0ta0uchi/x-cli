@@ -23,7 +23,7 @@ const HASH_KEYWORD: &str = "obfiowerehiring";
 const EPOCH_OFFSET_MS: u64 = 1682924400 * 1000;
 const TOTAL_ANIMATION_TIME: f64 = 4096.0;
 const RANDOM_SUFFIX: u8 = 3;
-const CACHE_TTL_SECS: u64 = 3600; // 1 hour
+const CACHE_TTL_SECS: u64 = 600; // 10 minutes
 
 #[derive(Serialize, Deserialize)]
 struct TransactionCache {
