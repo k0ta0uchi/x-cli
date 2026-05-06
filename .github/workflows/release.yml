@@ -26,10 +26,17 @@ jobs:
           - target: aarch64-apple-darwin
             os: macos-latest
             name: x-darwin-arm64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: x-windows-amd64
 
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install NASM
+        if: runner.os == 'Windows'
+        uses: ilammy/setup-nasm@v1
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -43,14 +50,18 @@ jobs:
         shell: bash
         run: |
           cd "target/${{ matrix.target }}/release"
-          tar czf "../../../${{ matrix.name }}.tar.gz" x
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            powershell -Command "Compress-Archive -Path x.exe -DestinationPath ../../../${{ matrix.name }}.zip"
+          else
+            tar czf "../../../${{ matrix.name }}.tar.gz" x
+          fi
           cd ../../..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: ${{ matrix.name }}.tar.gz
+          path: ${{ matrix.name }}.*
 
   release:
     needs: build
@@ -64,5 +75,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: "*.tar.gz"
+          files: |
+            *.tar.gz
+            *.zip
           generate_release_notes: true

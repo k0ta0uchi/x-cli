@@ -1,46 +1,45 @@
 # x-cli
 
-X (Twitter) 命令行工具，使用 Rust 编写，编译为单二进制文件 `x`。支持完整的推特读写操作。
+X (Twitter) コマンドラインツール。Rustで記述され、単一のバイナリ `x` としてコンパイルされます。ツイートの読み書きを含む、包括的な操作をサポートしています。
 
-所有输出为**精简 JSON**（自动提取关键字段，无 GraphQL 原始包装）。
+すべての出力は**軽量なJSON**形式です（GraphQLの生のレスポンスから主要なフィールドを自動抽出し、データ量を約98%削減しています）。
 
-## 安装
+## インストール
 
-### 方式一：一键安装（推荐）
+### 方法 1：ワンクリックインストール（推奨）
 
-自动检测系统和架构，下载对应二进制：
+システムとアーキテクチャを自動検出し、対応するバイナリをダウンロードします：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/haloowhite/twitter-cli/main/install.sh | bash
 ```
 
-自定义安装目录：
+インストールディレクトリをカスタマイズする場合：
 
 ```bash
 INSTALL_DIR=~/bin curl -fsSL https://raw.githubusercontent.com/haloowhite/twitter-cli/main/install.sh | bash
 ```
 
-### 方式二：手动下载
+### 方法 2：手動ダウンロード
 
-从 [GitHub Releases](https://github.com/haloowhite/twitter-cli/releases) 下载对应平台的包：
+[GitHub Releases](https://github.com/haloowhite/twitter-cli/releases) から、お使いのプラットフォームに対応するパッケージをダウンロードしてください：
 
-| 平台 | 文件 |
+| プラットフォーム | ファイル名 |
 |------|------|
+| Windows x64 | `x-windows-amd64.zip` |
 | Linux x86_64 | `x-linux-amd64.tar.gz` |
 | Linux ARM64 | `x-linux-arm64.tar.gz` |
 | macOS Intel | `x-darwin-amd64.tar.gz` |
 | macOS Apple Silicon | `x-darwin-arm64.tar.gz` |
 
-```bash
-# 示例：Linux x86_64
-curl -fsSL https://github.com/haloowhite/twitter-cli/releases/latest/download/x-linux-amd64.tar.gz | tar xz
-sudo mv x /usr/local/bin/
-```
+**Windowsでのインストール：**
+`x-windows-amd64.zip` をダウンロードし、解凍した `x.exe` をシステムパス（PATH）の通ったディレクトリ（例：`C:\Windows\System32` や任意のフォルダ）に配置してください。
 
-### 方式三：从源码编译
+### 方法 3：ソースからビルド
 
-需要 [Rust 工具链](https://rustup.rs/)：
+[Rust ツールチェーン](https://rustup.rs/) が必要です：
 
+**Unix (Linux/macOS):**
 ```bash
 git clone https://github.com/haloowhite/twitter-cli.git
 cd twitter-cli
@@ -48,42 +47,52 @@ cargo build --release
 sudo cp target/release/x /usr/local/bin/
 ```
 
-## 认证
+**Windows:**
+Windowsでのビルドには [NASM](https://www.nasm.us/)（TLS指紋ライブラリのコンパイルに使用）のインストールが必要です。
+```powershell
+git clone https://github.com/haloowhite/twitter-cli.git
+cd twitter-cli
+# NASMがPATHに含まれていることを確認してください
+cargo build --release
+# target/release/x.exe をPATHの通ったディレクトリにコピーしてください
+```
 
-凭证保存在 `~/.x-cli/credentials.json`，格式：
+## 認証
+
+認証情報は `~/.x-cli/credentials.json` に保存されます。形式は以下の通りです：
 
 ```json
 {
-  "auth_token": "你的auth_token",
-  "ct0": "自动生成的csrf_token",
-  "extra_cookies": "完整cookie字符串（写操作必须，否则发推会报226错误）"
+  "auth_token": "あなたのauth_token",
+  "ct0": "自動生成されるcsrf_token",
+  "extra_cookies": "完全なcookie文字列（書き込み操作に必須。不足すると226エラーが発生します）"
 }
 ```
 
-### 场景一：本地电脑有浏览器登录（最简单）
+### ケース 1：ローカルPCのブラウザでログイン済みの場合（最も簡単）
 
 ```bash
-x auth --browser chrome   # 支持: chrome, firefox, edge, safari
+x auth --browser chrome   # サポート：chrome, firefox, edge, safari
 ```
 
-### 场景二：Agent 在云端，推特登录在本地电脑
+### ケース 2：エージェントがクラウド上にあり、ブラウザがローカルPCにある場合
 
-**步骤 1：在本地电脑获取完整 Cookie**
+**ステップ 1：ローカルPCで完全なCookieを取得する**
 
-打开 Chrome/Edge/Firefox，登录 x.com，然后：
+Chrome/Edge/Firefoxで x.com にログインし、以下の操作を行います：
 
-1. 按 `F12` 打开 DevTools
-2. 点击 **Network**（网络）标签
-3. 在页面上随意刷新或浏览，让请求出现
-4. 点击任意一个发往 `x.com` 的请求
-5. 在右侧找到 **Request Headers** → **Cookie:** 这一行
-6. **右键 → 复制值**，得到完整的 Cookie 字符串
+1. `F12` キーを押してデベロッパーツールを開く
+2. **Network**（ネットワーク）タブをクリック
+3. ページをリフレッシュするか閲覧して、リクエストを表示させる
+4. `x.com` 宛の任意のリクエストをクリック
+5. 右側の **Request Headers** → **Cookie:** の行を探す
+6. **右クリック → 値をコピー** し、完全なCookie文字列を取得する
 
-**步骤 2：从 Cookie 中提取字段并配置**
+**ステップ 2：Cookieからフィールドを抽出して設定する**
 
 ```bash
-# 从完整 Cookie 字符串中提取 auth_token 和 ct0
-FULL_COOKIE="<粘贴完整Cookie字符串>"
+# 完全なCookie文字列から auth_token と ct0 を抽出
+FULL_COOKIE="<コピーした完全なCookie文字列を貼り付け>"
 AUTH_TOKEN=$(echo "$FULL_COOKIE" | grep -oE 'auth_token=[a-f0-9]+' | cut -d= -f2)
 CT0=$(echo "$FULL_COOKIE" | grep -oE 'ct0=[a-f0-9]+' | cut -d= -f2)
 
@@ -98,73 +107,74 @@ CREDENTIALS
 chmod 600 ~/.x-cli/credentials.json
 ```
 
-> **⚠️ 重要**：写操作（发推、回复、引用转推）**必须**提供完整 cookie（`extra_cookies` 字段）。只提供 `auth_token` + `ct0` 会导致 226 错误（"looks like automated behavior"）。读操作（浏览推文、搜索等）不受影响。
+> **⚠️ 重要**：書き込み操作（ポスト、返信、引用リポスト）には**完全なCookie**（`extra_cookies` フィールド）が**必須**です。`auth_token` + `ct0` だけでは 226 エラー（"looks like automated behavior"）が発生します。読み取り操作（タイムライン閲覧、検索など）は影響を受けません。
 
-### 场景三：只有手机，推特登录在移动端，Agent 在云端
+### ケース 3：モバイル端末のみ、またはエージェントがクラウドにある場合
 
-> **⚠️ 注意**：以下方法获取的 cookie 可能不完整（手机浏览器限制），可能只能支持读操作。如需发推等写操作，建议用电脑浏览器获取完整 Cookie（场景二）。
+> **⚠️ 注意**：以下の方法で取得したCookieは不完全な場合があり（モバイルブラウザの制限）、読み取り専用となる可能性があります。書き込み操作が必要な場合は、PCブラウザから取得することをお勧めします（ケース 2）。
 
-**方法 A：手机浏览器 + JavaScript**
+**方法 A：モバイルブラウザ + JavaScript**
 
-1. 用手机浏览器（Chrome/Safari）打开 https://x.com 并登录
-2. 在地址栏输入以下内容并访问（需要手动输入 `javascript:` 前缀，不能粘贴）：
+1. モバイルブラウザ（Chrome/Safari）で https://x.com にアクセスしログインする
+2. アドレスバーに以下を入力して実行する（`javascript:` 接頭辞は手動で入力する必要があります。貼り付けはできません）：
 
 ```
 javascript:void(document.title=document.cookie)
 ```
 
-3. 页面标题会变成 cookie 字符串，**复制完整的 cookie 字符串**
-4. 将完整字符串发给 Agent，Agent 按场景二的步骤 2 配置（包含 `extra_cookies`）
+3. ページタイトルがCookie文字列に変わるので、**完全なCookie文字列をコピー**する
+4. コピーした文字列をエージェントに渡し、ケース 2 のステップ 2 の手順で設定する（`extra_cookies` を含む）
 
-**方法 B：手机浏览器 DevTools（Android Chrome）**
+**方法 B：モバイルブラウザ DevTools (Android Chrome)**
 
-1. 手机 Chrome 打开 x.com 并登录
-2. 电脑 Chrome 打开 `chrome://inspect/#devices`，连接手机
-3. 在远程调试界面的 Console 中执行：
+1. モバイル Chrome で x.com にアクセスしログインする
+2. PC の Chrome で `chrome://inspect/#devices` を開き、モバイル端末を接続する
+3. リモートデバッグ画面の Console で以下を実行する：
 
 ```javascript
 document.cookie
 ```
 
-4. 复制输出的**完整 cookie 字符串**
+4. 出力された**完全なCookie文字列**をコピーする
 
-**方法 C：通过请求抓包（iOS/Android 通用）**
+**方法 C：パケットキャプチャ (iOS/Android 共通)**
 
-1. 安装抓包工具（如 Stream/HTTP Catcher/Charles）
-2. 打开 X/Twitter App，随意浏览
-3. 在抓包记录中找到发往 `api.x.com` 或 `x.com` 的请求
-4. 复制请求头中的**完整 `Cookie` 值**
+1. パケットキャプチャツール（例：Stream/HTTP Catcher/Charles）をインストールする
+2. X/Twitter アプリを開き、適当に閲覧する
+3. キャプチャ記録から `api.x.com` または `x.com` 宛のリクエストを探す
+4. リクエストヘッダー内の**完全な `Cookie` 値**をコピーする
 
-**方法 D：直接传配置文件**
+**方法 D：設定ファイルを直接転送する**
 
-在任意一台已认证的设备上导出配置，传到云端：
+既に認証済みのデバイスから設定を書き出し、クラウドに転送します：
 
 ```bash
-# 已认证设备上
+# 認証済みデバイスで
 cat ~/.x-cli/credentials.json
-# 复制输出内容
+# 出力内容をコピー
 
-# 云端服务器上
+# クラウドサーバーで
 mkdir -p ~/.x-cli
 cat > ~/.x-cli/credentials.json << 'EOF'
-（粘贴刚才复制的 JSON 内容）
+（コピーした JSON 内容を貼り付け）
 EOF
 chmod 600 ~/.x-cli/credentials.json
 ```
 
-### 注意事项
+### 注意事項
 
-- **写操作必须提供完整 cookie**（`extra_cookies` 字段），否则会报 226 错误
-- `auth_token` 是你的登录凭证，**请勿泄露给他人**
-- `auth_token` 有效期较长（通常数月），过期后需重新获取
-- 修改密码会使所有 `auth_token` 失效
-- `ct0` 可以不提供，工具会自动生成随机值
-- 建议对 `credentials.json` 设置 `chmod 600` 权限
+- **書き込み操作には完全なCookie（`extra_cookies` フィールド）が必須です**。不足すると 226 エラーが発生します。
+- `auth_token` はログイン情報そのものです。**他人に教えないでください**。
+- `auth_token` の有効期限は通常数ヶ月と長いですが、期限が切れた場合は再取得が必要です。
+- パスワードを変更すると、すべての `auth_token` が無効になります。
+- `ct0` は省略可能です。ツールがランダムな値を自動生成します。
+- `credentials.json` には `chmod 600` 等で適切な権限を設定することを推奨します。
 
-## 输出格式
+## 出力形式
 
-所有命令输出精简 JSON。推文示例：
+すべてのコマンドは精簡された JSON を出力します。
 
+ツイートの例：
 ```json
 {
   "id": "2030159267689632121",
@@ -178,8 +188,7 @@ chmod 600 ~/.x-cli/credentials.json
 }
 ```
 
-用户示例：
-
+ユーザーの例：
 ```json
 {
   "id": "44196397",
@@ -195,72 +204,72 @@ chmod 600 ~/.x-cli/credentials.json
 }
 ```
 
-## 命令参考
+## コマンドリファレンス
 
-支持 screen name（如 `elonmusk`）或 user ID。
+スクリーンネーム（例：`elonmusk`）またはユーザーIDをサポートしています。
 
-### 读取
-
-```bash
-x me                                    # 当前用户
-x user elonmusk                         # 查看用户
-x timeline --limit 20                   # 首页时间线
-x tweets elonmusk --limit 50            # 用户推文
-x replies elonmusk --limit 20           # 用户回复
-x followers elonmusk --limit 100        # 粉丝列表
-x following elonmusk --limit 100        # 关注列表
-x search "rust lang" --limit 30         # 搜索推文
-x detail 1234567890                     # 推文详情
-x detail 1234567890 --context           # 含对话上下文
-```
-
-### 紧凑模式
-
-加 `-c` 减少输出，只保留关键字段（适合 LLM / 管道处理）：
+### 読み取り操作
 
 ```bash
-x -c timeline                           # 紧凑时间线
-x -c tweets elonmusk --limit 10         # 紧凑推文
-x -c search "AI" --limit 20             # 紧凑搜索
+x me                                    # 現在のユーザー情報を表示
+x user elonmusk                         # ユーザー情報を表示
+x timeline --limit 20                   # タイムラインを表示
+x tweets elonmusk --limit 50            # ユーザーのツイートを表示
+x replies elonmusk --limit 20           # ユーザーの返信を表示
+x followers elonmusk --limit 100        # フォロワー一覧を表示
+x following elonmusk --limit 100        # フォロー中一覧を表示
+x search "rust lang" --limit 30         # ツイートを検索
+x detail 1234567890                     # ツイート詳細を表示
+x detail 1234567890 --context           # 前後の文脈を含めて詳細を表示
 ```
 
-### 写操作
+### コンパクトモード
+
+`-c` フラグを付けると出力を最小限にし、主要なフィールドのみを表示します（LLM やパイプ処理に最適です）：
 
 ```bash
-x post "Hello from x-cli!"             # 发推
-x reply 1234567890 "Great tweet!"       # 回复
-x quote 1234567890 "Interesting"        # 引用
-x like 1234567890                       # 点赞
-x unlike 1234567890                     # 取消点赞
-x retweet 1234567890                    # 转推
-x unretweet 1234567890                  # 取消转推
-x follow elonmusk                       # 关注
-x unfollow elonmusk                     # 取消关注
+x -c timeline                           # コンパクトなタイムライン
+x -c tweets elonmusk --limit 10         # コンパクトなツイート
+x -c search "AI" --limit 20             # コンパクトな検索
 ```
 
-## 与 jq 配合
+### 書き込み操作
 
 ```bash
-x tweets elonmusk --limit 5 | jq '.[].text'                    # 推文文本
-x tweets elonmusk | jq 'sort_by(.stats.likes) | last.url'      # 最热推文
-x search "AI" --limit 10 | jq '[.[] | select(.stats.likes > 100)]' # 过滤
-x user elonmusk | jq '.followers_count'                         # 粉丝数
+x post "Hello from x-cli!"             # ツイートを投稿
+x reply 1234567890 "Great tweet!"       # 返信を投稿
+x quote 1234567890 "Interesting"        # 引用リポスト
+x like 1234567890                       # いいね
+x unlike 1234567890                     # いいね解除
+x retweet 1234567890                    # リポスト
+x unretweet 1234567890                  # リポスト解除
+x follow elonmusk                       # フォロー
+x unfollow elonmusk                     # フォロー解除
 ```
 
-## 故障排除
+## jq との組み合わせ
 
-| 问题 | 解决方案 |
+```bash
+x tweets elonmusk --limit 5 | jq '.[].text'                    # ツイート本文のみ抽出
+x tweets elonmusk | jq 'sort_by(.stats.likes) | last.url'      # 最もいいねが多いツイートのURL
+x search "AI" --limit 10 | jq '[.[] | select(.stats.likes > 100)]' # 100いいね以上のツイートをフィルタ
+x user elonmusk | jq '.followers_count'                         # フォロワー数のみ抽出
+```
+
+## トラブルシューティング
+
+| エラー内容 | 解決策 |
 |------|----------|
-| `No credentials found` | 运行 `x auth --browser chrome` |
-| 写操作 226 错误 | **必须提供完整 cookie**：从浏览器 Network 标签复制完整 Cookie 字符串，填入 credentials.json 的 `extra_cookies` 字段 |
-| 404 错误 | 删除 `~/.x-cli/transaction_cache.json` 重试 |
+| `No credentials found` | `x auth --browser chrome` を実行してください |
+| 書き込み操作での 226 エラー | **完全なCookieが必須です**：ブラウザの Network タブから完全な Cookie 文字列をコピーし、credentials.json の `extra_cookies` フィールドに設定してください |
+| 404 エラー | `~/.x-cli/transaction_cache.json` を削除して再試行してください |
 
-## 完整用法
+## 詳細な使い方
 
-详见 [skill.md](skill.md)。
+詳細は [skill.md](skill.md) を参照してください。
 
-## 技术说明
+## 技術仕様
 
-- rquest (Chrome TLS 指纹) + reqwest (备用) 双 HTTP 客户端
-- 自动提取 x-client-transaction-id
-- 输出自动提取关键字段，去除 GraphQL 包装（减少 98% 数据量）
+- rquest (Chrome TLS 指紋) + reqwest (フォールバック) のデュアル HTTP クライアント
+- `x-client-transaction-id` の自動抽出
+- GraphQL レスポンスから主要フィールドを自動抽出（データ量を 98% 削減）

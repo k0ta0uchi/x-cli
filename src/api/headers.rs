@@ -35,9 +35,18 @@ pub fn build_headers(csrf_token: &str) -> HeaderMap {
     );
     headers.insert("sec-ch-ua-mobile", HeaderValue::from_static("?0"));
     headers.insert("sec-ch-ua-model", HeaderValue::from_static("\"\""));
+
+    let platform = if cfg!(target_os = "windows") {
+        "\"Windows\""
+    } else if cfg!(target_os = "macos") {
+        "\"macOS\""
+    } else {
+        "\"Linux\""
+    };
+
     headers.insert(
         "sec-ch-ua-platform",
-        HeaderValue::from_static("\"macOS\""),
+        HeaderValue::from_str(platform).unwrap(),
     );
     headers.insert(
         "sec-ch-ua-platform-version",
